@@ -566,3 +566,77 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE('Transaction due date updated successfully');
 END;
 /
+
+
+------------------ Functions ------------------------------
+
+-- Function to check if a user has any overdue books
+CREATE OR REPLACE FUNCTION has_overdue_books(p_user_id IN INT)
+RETURN BOOLEAN
+IS
+    v_count INT;
+BEGIN
+    SELECT COUNT(*)
+    INTO v_count
+    FROM G4_Transactions
+    WHERE UserID = p_user_id
+    AND DueDate < SYSDATE
+    AND ReturnDate IS NULL;
+
+    IF v_count > 0 THEN
+        RETURN TRUE;
+    ELSE
+        RETURN FALSE;
+    END IF;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Error: No user found for UserID ' || p_user_id);
+        RETURN NULL;
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+        RETURN NULL;
+END;
+/
+
+
+-- testing has_overdue_books function
+UPDATE G4_TRANSACTIONS SET RETURNDATE = TO_DATE('2023-04-26', 'YYYY-MM-DD') WHERE transactionid = 3157;
+
+UPDATE G4_TRANSACTIONS SET CHECKOUTDATE = TO_DATE('2023-05-02', 'YYYY-MM-DD'), DUEDATE = TO_DATE('2023-04-03', 'YYYY-MM-DD') WHERE transactionid = 3155;
+
+
+DECLARE
+  v_user_id INT := 1607; -- 1600
+BEGIN
+  IF has_overdue_books(v_user_id) THEN
+    DBMS_OUTPUT.PUT_LINE('User ' || v_user_id || ' has overdue books');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('User ' || v_user_id || ' does not have overdue books');
+  END IF;
+END;
+
+
+--- Function to retrieve the total number of books published by a publisher
+
+CREATE OR REPLACE FUNCTION get_publisher_book_count(p_publisher_id IN INT)
+RETURN INT
+IS
+    v_count INT;
+BEGIN
+    SELECT COUNT(*)
+    INTO v_count
+    FROM G4_Books
+    WHERE PublisherID = p_publisher_id;
+
+    RETURN v_count;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Error: No publisher found for PublisherID ' || p_publisher_id);
+        RETURN NULL;
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+        RETURN NULL;
+END;
+/
+-- test get_publisher_book_count function
+SELECT get_publisher_book_count(1057) FROM dual;
