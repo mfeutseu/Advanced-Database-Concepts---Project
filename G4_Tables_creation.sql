@@ -1,11 +1,53 @@
-drop TABLE G4_Reservations;
-drop TABLE G4_Transactions;
-drop TABLE G4_Users;
-drop TABLE G4_Orders;
-drop TABLE G4_Books;
-drop TABLE G4_Publishers;
-drop TABLE G4_Authors;
-drop TABLE G4_Categories;
+drop TABLE G4_BookFormats; 
+drop TABLE G4_BookConditions;
+drop TABLE G4_MemberTypes;
+
+DROP TABLE G4_Reservations;
+DROP TABLE G4_Orders;
+DROP TABLE G4_Transactions;
+DROP TABLE G4_Users;
+DROP TABLE G4_Books;
+DROP TABLE G4_Publishers;
+DROP TABLE G4_Authors;
+DROP TABLE G4_Categories;
+
+CREATE TABLE G4_BookFormats (
+    FormatID INT PRIMARY KEY,
+    FormatName VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE G4_BookConditions (
+    ConditionID INT PRIMARY KEY,
+    ConditionName VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE G4_MemberTypes (
+    MemberTypeID INT PRIMARY KEY,
+    MemberTypeName VARCHAR(50) NOT NULL
+);
+
+-- Create the G4_Categories table
+CREATE TABLE G4_Categories (
+    CategoryID INT PRIMARY KEY,
+    CategoryName VARCHAR(50) NOT NULL
+);
+
+-- Create the G4_Authors table
+CREATE TABLE G4_Authors (
+    AuthorID INT PRIMARY KEY,
+    FirstName VARCHAR(50) NOT NULL,
+    LastName VARCHAR(50) NOT NULL,
+    Biography VARCHAR(250) NOT NULL
+);
+
+
+CREATE TABLE G4_Publishers (
+    PublisherID INT PRIMARY KEY,
+    Name VARCHAR(255) NOT NULL,
+    Address VARCHAR(255),
+    PhoneNumber VARCHAR(10),
+    Email VARCHAR(255)
+);
 
 -- Create the G4_Books table
 CREATE TABLE G4_Books (
@@ -17,7 +59,14 @@ CREATE TABLE G4_Books (
     ISBN VARCHAR(13) NOT NULL UNIQUE,
     NumPages INT,
     YearPublished INT,
-    AvailabilityStatus VARCHAR(20) DEFAULT 'Available'
+    AvailabilityStatus VARCHAR(20) DEFAULT 'Available',
+    FormatID INT, -- New column for G4_BookFormats
+    ConditionID INT, -- New column for G4_BookConditions
+    FOREIGN KEY (AuthorID) REFERENCES G4_Authors(AuthorID),
+    FOREIGN KEY (PublisherID) REFERENCES G4_Publishers(PublisherID),
+    FOREIGN KEY (CategoryID) REFERENCES G4_Categories(CategoryID),
+    FOREIGN KEY (FormatID) REFERENCES G4_BookFormats(FormatID), -- Foreign key constraint for G4_BookFormats
+    FOREIGN KEY (ConditionID) REFERENCES G4_BookConditions(ConditionID) -- Foreign key constraint for G4_BookConditions
 );
 
 
@@ -27,7 +76,9 @@ CREATE TABLE G4_Users (
     LastName VARCHAR(50) NOT NULL,
     Address VARCHAR(255),
     PhoneNumber VARCHAR(20),
-    Email VARCHAR(255) UNIQUE
+    Email VARCHAR(255) UNIQUE,
+    MemberTypeID INT NOT NULL,
+    FOREIGN KEY (MemberTypeID) REFERENCES G4_MemberTypes(MemberTypeID)
 );
 
 
@@ -43,16 +94,6 @@ CREATE TABLE G4_Transactions (
     FOREIGN KEY (UserID) REFERENCES G4_Users(UserID)
 );
 
-
-CREATE TABLE G4_Publishers (
-    PublisherID INT PRIMARY KEY,
-    Name VARCHAR(255) NOT NULL,
-    Address VARCHAR(255),
-    PhoneNumber VARCHAR(10),
-    Email VARCHAR(255)
-);
-
-
 -- Create the G4_Orders table
 CREATE TABLE G4_Orders (
     OrderID INT PRIMARY KEY,
@@ -62,15 +103,6 @@ CREATE TABLE G4_Orders (
     FOREIGN KEY (BookID) REFERENCES G4_Books(BookID),
     FOREIGN KEY (PublisherID) REFERENCES G4_Publishers(PublisherID)
 );
-
--- Create the G4_Authors table
-CREATE TABLE G4_Authors (
-    AuthorID INT PRIMARY KEY,
-    FirstName VARCHAR(50) NOT NULL,
-    LastName VARCHAR(50) NOT NULL,
-    Biography VARCHAR(250) NOT NULL
-);
-
 
 -- Create the G4_Reservations table
 CREATE TABLE G4_Reservations (
@@ -82,59 +114,6 @@ CREATE TABLE G4_Reservations (
     FOREIGN KEY (BookID) REFERENCES G4_Books(BookID)
 );
 
-
-
-
--- Create the G4_Categories table
-CREATE TABLE G4_Categories (
-    CategoryID INT PRIMARY KEY,
-    CategoryName VARCHAR(50) NOT NULL
-);
-
-
-ALTER TABLE G4_Books
-ADD CONSTRAINT FK_G4_Books_Category
-FOREIGN KEY (CategoryID)
-REFERENCES G4_Categories(CategoryID);
-
-ALTER TABLE G4_Books
-ADD CONSTRAINT FK_G4_Books_Author
-FOREIGN KEY (AuthorID)
-REFERENCES G4_Authors(AuthorID);
-
-
-ALTER TABLE G4_Books
-ADD CONSTRAINT FK_G4_Books_Publisher
-FOREIGN KEY (PublisherID)
-REFERENCES G4_Publishers(PublisherID);
-----------------------------------------------------------------------------------------------
-
-
---inserting table manually(To creat parent key). This need to be in order
-INSERT INTO G4_Categories
-VALUES (764,'Bildungsroman genre');
-
-INSERT INTO G4_Publishers
-VALUES (1000, 'Mark Avito', '543 Charles Street', '6478858885', 'Mark.Avito@email');
-
-INSERT INTO G4_Users
-VALUES (1564,'Roland', 'Baja', '123 main street', 6474708463, 'rbja@email.com');
-
-INSERT INTO G4_Authors
-VALUES (619,'Mark', 'Avito','Biography Cup in a Mug book');
-
-INSERT INTO G4_Books
-VALUES (55,'Cup in a Mug',619,1000,764,'8211108',300, 1997, Default);
-
-INSERT INTO G4_Orders
-VALUES (5123,55,1000, TO_Date('2022/08/01'));
-
-INSERT INTO G4_Reservations
-VALUES (150,1564, 55, TO_Date('2022/07/01'));
-
-INSERT INTO G4_Transactions
-VALUES (3097,55, 1564, TO_Date('2022/09/01'), TO_Date('2022/10/01'), TO_Date('2022/10/01'));
-----------------------------------------------------------------------------------------------
 -- Everything About Sequence
 Drop Sequence G4_Books_Seq;
 Drop Sequence G4_Users_Seq;
@@ -144,12 +123,6 @@ Drop Sequence G4_Orders_Seq;
 Drop Sequence G4_Authors_Seq;
 Drop Sequence G4_Reservations_Seq;
 Drop Sequence G4_Categories_Seq;
-Drop Sequence G4_ISBN_Seq;
-Drop Sequence OrderID_Seq;
-Drop Sequence Reservation_Seq;
-
-
----  Sequences ------------
 
 -- Create a sequence for G4_Books
 CREATE SEQUENCE G4_Books_Seq
@@ -208,143 +181,255 @@ INCREMENT BY 1
 NOCACHE
 NOCYCLE;
 
--- Create a sequence for ISBN
-CREATE SEQUENCE G4_ISBN_Seq
-START WITH 8211325
-INCREMENT BY 1
-NOCACHE
-NOCYCLE;
--- Create a sequence for OrderID
-CREATE SEQUENCE OrderID_Seq
-START WITH 5200
-INCREMENT BY 1
-NOCACHE
-NOCYCLE;
 
-CREATE SEQUENCE Reservation_Seq
-START WITH 175
-INCREMENT BY 1
-NOCACHE
-NOCYCLE;
+----------------- Inserting data -----
+
+-- G4_BookFormats table
+  INSERT INTO G4_BookFormats (FormatID, FormatName) VALUES (1, 'Hardcover');
+  INSERT INTO G4_BookFormats (FormatID, FormatName) VALUES (2, 'Paperback');
+  INSERT INTO G4_BookFormats (FormatID, FormatName) VALUES (3, 'Audiobook');
+  INSERT INTO G4_BookFormats (FormatID, FormatName) VALUES (4, 'eBook');
+  INSERT INTO G4_BookFormats (FormatID, FormatName) VALUES (5, 'Large Print');
+
+-- G4_BookConditions;
+INSERT INTO G4_BookConditions (ConditionID, ConditionName) VALUES (1, 'New');
+INSERT INTO G4_BookConditions (ConditionID, ConditionName) VALUES (2, 'Like New');
+INSERT INTO G4_BookConditions (ConditionID, ConditionName) VALUES (3, 'Very Good');
+INSERT INTO G4_BookConditions (ConditionID, ConditionName) VALUES (4, 'Good');
+INSERT INTO G4_BookConditions (ConditionID, ConditionName) VALUES (5, 'Acceptable');
 
 
-/*inserting data into the table through Sequence.
-It need to be in order to work properly: It cannot be group by table
-1st: G4_Categories
-2nd: G4_Publishers
-3rd: G4_Users
-4th: G4_Authors
-5th: g4_books
-6th: G4_Orders
-7th: G4_Reservations
-8th: G4_Transactions*/
+-- G4_MemberTypes;
+INSERT INTO G4_MemberTypes (MemberTypeID, MemberTypeName) VALUES (1, 'Student');
+INSERT INTO G4_MemberTypes (MemberTypeID, MemberTypeName) VALUES (2, 'Faculty');
+INSERT INTO G4_MemberTypes (MemberTypeID, MemberTypeName) VALUES (3, 'Staff');
+INSERT INTO G4_MemberTypes (MemberTypeID, MemberTypeName) VALUES (4, 'General Public');
 
 
-INSERT INTO G4_Categories
-VALUES (G4_Categories_Seq.nextval,'Fiction');
-INSERT INTO G4_Publishers
-VALUES (G4_Publishers_Seq.nextval, 'Guy de Maupassant', '514 Maupposent Street', '6478858235', 'Guyde.Maupassant@email');
-INSERT INTO G4_Users
-VALUES (G4_Users_Seq.nextval,'Calvin', 'Klein', '872 Yonge Street', 6474751696, 'Calvin.Klein@email.com');
-INSERT INTO G4_Authors
-VALUES (G4_Authors_Seq.nextval,'Guy de', 'Maupassant','Author of a Womans Life book');
-INSERT INTO g4_books
-VALUES (G4_Books_Seq.nextval,'A Womans Life',G4_Authors_Seq.currval,G4_Publishers_Seq.currval,G4_Categories_Seq.currval,G4_ISBN_Seq.nextval,208, 1888, Default);
-INSERT INTO G4_Orders
-VALUES (OrderID_Seq.nextval,G4_Books_Seq.currval,G4_Publishers_Seq.currval, TO_Date('2022/08/01'));
-INSERT INTO G4_Reservations
-VALUES (Reservation_Seq.nextval ,G4_Users_Seq.currval, G4_Books_Seq.currval, TO_Date('2022/07/01'));
-INSERT INTO G4_Transactions
-VALUES (G4_Transactions_Seq.nextval,G4_Books_Seq.currval, G4_Users_Seq.currval, TO_Date('2022/09/01'), TO_Date('2022/10/01'), TO_Date('2022/10/01'));
+-- G4_Categories
+INSERT INTO G4_Categories (CategoryID, CategoryName) VALUES (G4_Categories_Seq.NEXTVAL, 'Science Fiction');
+INSERT INTO G4_Categories (CategoryID, CategoryName) VALUES (G4_Categories_Seq.NEXTVAL, 'Mystery');
+INSERT INTO G4_Categories (CategoryID, CategoryName) VALUES (G4_Categories_Seq.NEXTVAL, 'Romance');
+INSERT INTO G4_Categories (CategoryID, CategoryName) VALUES (G4_Categories_Seq.NEXTVAL, 'Biography');
+INSERT INTO G4_Categories (CategoryID, CategoryName) VALUES (G4_Categories_Seq.NEXTVAL, 'History');
+INSERT INTO G4_Categories (CategoryID, CategoryName) VALUES (G4_Categories_Seq.NEXTVAL, 'Fantasy');
+INSERT INTO G4_Categories (CategoryID, CategoryName) VALUES (G4_Categories_Seq.NEXTVAL, 'Thriller');
+INSERT INTO G4_Categories (CategoryID, CategoryName) VALUES (G4_Categories_Seq.NEXTVAL, 'Self-help');
+INSERT INTO G4_Categories (CategoryID, CategoryName) VALUES (G4_Categories_Seq.NEXTVAL, 'Children');
+INSERT INTO G4_Categories (CategoryID, CategoryName) VALUES (G4_Categories_Seq.NEXTVAL, 'Young Adult');
+   
+
+-- G4_Authors
+INSERT INTO G4_Authors (AuthorID, FirstName, LastName, Biography) VALUES (G4_Authors_Seq.NEXTVAL, 'John', 'Doe', 'John Doe is a fictional author.');
+INSERT INTO G4_Authors (AuthorID, FirstName, LastName, Biography) VALUES (G4_Authors_Seq.NEXTVAL, 'Jane', 'Smith', 'Jane Smith is a well-known author in the mystery genre.');
+INSERT INTO G4_Authors (AuthorID, FirstName, LastName, Biography) VALUES (G4_Authors_Seq.NEXTVAL, 'Michael', 'Johnson', 'Michael Johnson is a renowned science fiction writer.');
+INSERT INTO G4_Authors (AuthorID, FirstName, LastName, Biography) VALUES (G4_Authors_Seq.NEXTVAL, 'Emily', 'Clark', 'Emily Clark is a popular romance novelist.');
+INSERT INTO G4_Authors (AuthorID, FirstName, LastName, Biography) VALUES (G4_Authors_Seq.NEXTVAL, 'David', 'Brown', 'David Brown is a bestselling author of historical fiction.');
+INSERT INTO G4_Authors (AuthorID, FirstName, LastName, Biography) VALUES (G4_Authors_Seq.NEXTVAL, 'Sarah', 'Taylor', 'Sarah Taylor writes captivating young adult novels.');
+INSERT INTO G4_Authors (AuthorID, FirstName, LastName, Biography) VALUES (G4_Authors_Seq.NEXTVAL, 'James', 'Wilson', 'James Wilson is an award-winning author of literary fiction.');
+INSERT INTO G4_Authors (AuthorID, FirstName, LastName, Biography) VALUES (G4_Authors_Seq.NEXTVAL, 'Jessica', 'Harris', 'Jessica Harris is known for her thrilling suspense novels.');
+INSERT INTO G4_Authors (AuthorID, FirstName, LastName, Biography) VALUES (G4_Authors_Seq.NEXTVAL, 'Richard', 'White', 'Richard White is an influential author of nonfiction works.');
+INSERT INTO G4_Authors (AuthorID, FirstName, LastName, Biography) VALUES (G4_Authors_Seq.NEXTVAL, 'Laura', 'Martin', 'Laura Martin is a talented children''s book author.');
+
+
+-- G4_Publishers;
+  INSERT INTO G4_Publishers (PublisherID, Name, Address, PhoneNumber, Email)
+  VALUES (G4_Publishers_Seq.NEXTVAL, 'Penguin Books', '123 Main St', '555-1234', 'info@penguinbooks.com');
+  
+  INSERT INTO G4_Publishers (PublisherID, Name, Address, PhoneNumber, Email)
+  VALUES (G4_Publishers_Seq.NEXTVAL, 'Random House', '456 Oak St', '555-5678', 'info@randomhouse.com');
+  
+  INSERT INTO G4_Publishers (PublisherID, Name, Address, PhoneNumber, Email)
+  VALUES (G4_Publishers_Seq.NEXTVAL, 'HarperCollins', '789 Maple Ave', '555-9012', 'info@harpercollins.com');
+  
+  INSERT INTO G4_Publishers (PublisherID, Name, Address, PhoneNumber, Email)
+  VALUES (G4_Publishers_Seq.NEXTVAL, 'Simon Schuster', '321 Elm St', '555-3456', 'info@simonandschuster.com');
+  
+  INSERT INTO G4_Publishers (PublisherID, Name, Address, PhoneNumber, Email)
+  VALUES (G4_Publishers_Seq.NEXTVAL, 'Hachette Book Group', '654 Pine St', '555-7890', 'info@hachettebookgroup.com');
+  
+  INSERT INTO G4_Publishers (PublisherID, Name, Address, PhoneNumber, Email)
+  VALUES (G4_Publishers_Seq.NEXTVAL, 'Macmillan Publishers', '987 Cedar Rd', '555-2345', 'info@macmillanpublishers.com');
+  
+  INSERT INTO G4_Publishers (PublisherID, Name, Address, PhoneNumber, Email)
+  VALUES (G4_Publishers_Seq.NEXTVAL, 'Wiley', '246 Birch Ave', '555-6789', 'info@wiley.com');
+  
+  INSERT INTO G4_Publishers (PublisherID, Name, Address, PhoneNumber, Email)
+  VALUES (G4_Publishers_Seq.NEXTVAL, 'Oxford University Press', '369 Ash St', '555-0123', 'info@oup.com');
+  
+  INSERT INTO G4_Publishers (PublisherID, Name, Address, PhoneNumber, Email)
+  VALUES (G4_Publishers_Seq.NEXTVAL, 'Cambridge University Press', '802 Walnut St', '555-4567', 'info@cup.com');
+  
+  INSERT INTO G4_Publishers (PublisherID, Name, Address, PhoneNumber, Email)
+  VALUES (G4_Publishers_Seq.NEXTVAL, 'Pearson Education', '1350 Oakwood Blvd', '555-8901', 'info@pearsoneducation.com');
+
+
+-- G4_Users
+INSERT INTO G4_Users (UserID, FirstName, LastName, Address, PhoneNumber, Email, MemberTypeID) VALUES
+(G4_Users_Seq.nextval, 'John', 'Doe', '123 Main St', '555-1234', 'john.doe@email.com', 1);
+
+INSERT INTO G4_Users (UserID, FirstName, LastName, Address, PhoneNumber, Email, MemberTypeID) VALUES
+(G4_Users_Seq.nextval, 'Jane', 'Smith', '456 Oak St', '555-5678', 'jane.smith@email.com', 2);
+
+INSERT INTO G4_Users (UserID, FirstName, LastName, Address, PhoneNumber, Email, MemberTypeID) VALUES
+(G4_Users_Seq.nextval, 'Michael', 'Johnson', '789 Maple Ave', '555-9012', 'michael.johnson@email.com', 3);
+
+INSERT INTO G4_Users (UserID, FirstName, LastName, Address, PhoneNumber, Email, MemberTypeID) VALUES
+(G4_Users_Seq.nextval, 'Emily', 'Clark', '321 Elm St', '555-3456', 'emily.clark@email.com', 1);
+
+INSERT INTO G4_Users (UserID, FirstName, LastName, Address, PhoneNumber, Email, MemberTypeID) VALUES
+(G4_Users_Seq.nextval, 'David', 'Brown', '654 Pine St', '555-7890', 'david.brown@email.com', 2);
+
+INSERT INTO G4_Users (UserID, FirstName, LastName, Address, PhoneNumber, Email, MemberTypeID) VALUES
+(G4_Users_Seq.nextval, 'Sarah', 'Taylor', '987 Cedar Rd', '555-2345', 'sarah.taylor@email.com', 4);
+
+INSERT INTO G4_Users (UserID, FirstName, LastName, Address, PhoneNumber, Email, MemberTypeID) VALUES
+(G4_Users_Seq.nextval, 'James', 'Wilson', '246 Birch Ave', '555-6789', 'james.wilson@email.com', 1);
+
+INSERT INTO G4_Users (UserID, FirstName, LastName, Address, PhoneNumber, Email, MemberTypeID) VALUES
+(G4_Users_Seq.nextval, 'Jessica', 'Harris', '369 Ash St', '555-0123', 'jessica.harris@email.com', 2);
+
+INSERT INTO G4_Users (UserID, FirstName, LastName, Address, PhoneNumber, Email, MemberTypeID) VALUES
+(G4_Users_Seq.nextval, 'Richard', 'White', '802 Walnut St', '555-4567', 'richard.white@email.com', 3);
+
+INSERT INTO G4_Users (UserID, FirstName, LastName, Address, PhoneNumber, Email, MemberTypeID) VALUES
+(G4_Users_Seq.nextval, 'Laura', 'Martin', '1350 Oakwood Blvd', '555-8901', 'laura.martin@email.com', 3);
+
+
+-- G4_Books;
+  INSERT INTO G4_Books (BookID, Title, AuthorID, PublisherID, CategoryID, ISBN, NumPages, YearPublished, AvailabilityStatus, FormatID, ConditionID)
+  VALUES (G4_Books_Seq.NEXTVAL, 'The Great Gatsby', 708, 1057, 808, '9780141182636', 180, 1925, 'Available', 1, 1);
+  
+  INSERT INTO G4_Books (BookID, Title, AuthorID, PublisherID, CategoryID, ISBN, NumPages, YearPublished, AvailabilityStatus, FormatID, ConditionID)
+  VALUES (G4_Books_Seq.NEXTVAL, 'To Kill a Mockingbird', 709, 1058, 809, '9780446310789', 281, 1960, 'Available', 2, 2);
+  
+  INSERT INTO G4_Books (BookID, Title, AuthorID, PublisherID, CategoryID, ISBN, NumPages, YearPublished, AvailabilityStatus, FormatID, ConditionID)
+  VALUES (G4_Books_Seq.NEXTVAL, '1984', 704, 1059, 800, '9780451524935', 328, 1949, 'Available', 3, 3);
+  
+  INSERT INTO G4_Books (BookID, Title, AuthorID, PublisherID, CategoryID, ISBN, NumPages, YearPublished, AvailabilityStatus, FormatID, ConditionID)
+  VALUES (G4_Books_Seq.NEXTVAL, 'Pride and Prejudice', 700, 1050, 804, '9780141439518', 416, 1813, 'Available', 4, 4);
+  
+  INSERT INTO G4_Books (BookID, Title, AuthorID, PublisherID, CategoryID, ISBN, NumPages, YearPublished, AvailabilityStatus, FormatID, ConditionID)
+  VALUES (G4_Books_Seq.NEXTVAL, 'Harry Potter and the Philosopher''s Stone', 708, 1051, 800, '9780747532743', 223, 1997, 'Available', 5, 5);
+  
+  INSERT INTO G4_Books (BookID, Title, AuthorID, PublisherID, CategoryID, ISBN, NumPages, YearPublished, AvailabilityStatus, FormatID, ConditionID)
+  VALUES (G4_Books_Seq.NEXTVAL, 'The Lord of the Rings', 708, 1054, 805, '9780618640157', 1178, 1954, 'Available', 1, 2);
+  
+  INSERT INTO G4_Books (BookID, Title, AuthorID, PublisherID, CategoryID, ISBN, NumPages, YearPublished, AvailabilityStatus, FormatID, ConditionID)
+  VALUES (G4_Books_Seq.NEXTVAL, 'The Hobbit', 700, 1053, 802, '9780261103344', 310, 1937, 'Available', 2, 3);
+  
+  INSERT INTO G4_Books (BookID, Title, AuthorID, PublisherID, CategoryID, ISBN, NumPages, YearPublished, AvailabilityStatus, FormatID, ConditionID)
+  VALUES (G4_Books_Seq.NEXTVAL, 'The Catcher in the Rye', 704, 1057, 801, '9780316769174', 277, 1951, 'Available', 3, 1);
+
+
+-- G4_Reservations
+  INSERT INTO G4_Reservations (ReservationID, UserID, BookID, ReservationDate)
+  VALUES (G4_Reservations_Seq.NEXTVAL, 1601, 80, TO_DATE('2023-04-09', 'YYYY-MM-DD'));
+  INSERT INTO G4_Reservations (ReservationID, UserID, BookID, ReservationDate)
+  VALUES (G4_Reservations_Seq.NEXTVAL, 1602, 81, TO_DATE('2023-04-09', 'YYYY-MM-DD'));
+  INSERT INTO G4_Reservations (ReservationID, UserID, BookID, ReservationDate)
+  VALUES (G4_Reservations_Seq.NEXTVAL, 1603, 88, TO_DATE('2023-04-09', 'YYYY-MM-DD'));
+  INSERT INTO G4_Reservations (ReservationID, UserID, BookID, ReservationDate)
+  VALUES (G4_Reservations_Seq.NEXTVAL, 1604, 88, TO_DATE('2023-04-09', 'YYYY-MM-DD'));
+  INSERT INTO G4_Reservations (ReservationID, UserID, BookID, ReservationDate)
+  VALUES (G4_Reservations_Seq.NEXTVAL, 1605, 91, TO_DATE('2023-04-09', 'YYYY-MM-DD'));
+  INSERT INTO G4_Reservations (ReservationID, UserID, BookID, ReservationDate)
+  VALUES (G4_Reservations_Seq.NEXTVAL, 1609, 93, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
+  INSERT INTO G4_Reservations (ReservationID, UserID, BookID, ReservationDate)
+  VALUES (G4_Reservations_Seq.NEXTVAL, 1602, 94, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
+  INSERT INTO G4_Reservations (ReservationID, UserID, BookID, ReservationDate)
+  VALUES (G4_Reservations_Seq.NEXTVAL, 1603, 97, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
+  INSERT INTO G4_Reservations (ReservationID, UserID, BookID, ReservationDate)
+  VALUES (G4_Reservations_Seq.NEXTVAL, 1604, 88, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
+  INSERT INTO G4_Reservations (ReservationID, UserID, BookID, ReservationDate)
+  VALUES (G4_Reservations_Seq.NEXTVAL, 1608, 89, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
 
 
 
-INSERT INTO G4_Categories
-VALUES (G4_Categories_Seq.nextval,'Biography');
-INSERT INTO G4_Publishers
-VALUES (G4_Publishers_Seq.nextval, 'Abul Fazl', '1613 Adeleid Ave', '6478858678', 'Abul.Fazl@email');
-INSERT INTO G4_Users
-VALUES (G4_Users_Seq.nextval,'Abra', 'Cadabra', '5123 Bloor Street', 6474757864, 'Abra.Cadabra@email.com');
-INSERT INTO G4_Authors
-VALUES (G4_Authors_Seq.nextval,'Abul', 'Fazl','Author of Akbarnama book');
-INSERT INTO g4_books
-VALUES (G4_Books_Seq.nextval,'Akbarnama',G4_Authors_Seq.currval,G4_Publishers_Seq.currval,G4_Categories_Seq.currval,G4_ISBN_Seq.nextval,167, 1902, Default);
-INSERT INTO G4_Orders
-VALUES (OrderID_Seq.nextval,G4_Books_Seq.currval,G4_Publishers_Seq.currval, TO_Date('2022/12/22'));
-INSERT INTO G4_Reservations
-VALUES (Reservation_Seq.nextval ,G4_Users_Seq.currval, G4_Books_Seq.currval, TO_Date('2022/11/22'));
-INSERT INTO G4_Transactions
-VALUES (G4_Transactions_Seq.nextval,G4_Books_Seq.currval, G4_Users_Seq.currval, TO_Date('2023/01/22'), TO_Date('2023/02/22'), TO_Date('2023/02/22'));
+--  G4_Orders;
+INSERT INTO G4_Orders (OrderID, BookID, PublisherID, OrderDate)
+VALUES (G4_Orders_Seq.NEXTVAL, 80, 1050, TO_DATE('2023-04-09', 'YYYY-MM-DD'));
+
+INSERT INTO G4_Orders (OrderID, BookID, PublisherID, OrderDate)
+VALUES (G4_Orders_Seq.NEXTVAL, 81, 1051, TO_DATE('2023-04-09', 'YYYY-MM-DD'));
+
+INSERT INTO G4_Orders (OrderID, BookID, PublisherID, OrderDate)
+VALUES (G4_Orders_Seq.NEXTVAL, 88, 1059, TO_DATE('2023-04-09', 'YYYY-MM-DD'));
+
+INSERT INTO G4_Orders (OrderID, BookID, PublisherID, OrderDate)
+VALUES (G4_Orders_Seq.NEXTVAL, 89, 1054, TO_DATE('2023-04-09', 'YYYY-MM-DD'));
+
+INSERT INTO G4_Orders (OrderID, BookID, PublisherID, OrderDate)
+VALUES (G4_Orders_Seq.NEXTVAL, 91, 1055, TO_DATE('2023-04-09', 'YYYY-MM-DD'));
+
+INSERT INTO G4_Orders (OrderID, BookID, PublisherID, OrderDate)
+VALUES (G4_Orders_Seq.NEXTVAL, 93, 1052, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
+
+INSERT INTO G4_Orders (OrderID, BookID, PublisherID, OrderDate)
+VALUES (G4_Orders_Seq.NEXTVAL, 94, 1059, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
+
+INSERT INTO G4_Orders (OrderID, BookID, PublisherID, OrderDate)
+VALUES (G4_Orders_Seq.NEXTVAL, 97, 1057, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
+
+INSERT INTO G4_Orders (OrderID, BookID, PublisherID, OrderDate)
+VALUES (G4_Orders_Seq.NEXTVAL, 88, 1050, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
+
+INSERT INTO G4_Orders (OrderID, BookID, PublisherID, OrderDate)
+VALUES (G4_Orders_Seq.NEXTVAL, 81, 1052, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
 
 
+-- G4_Transactions
+INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDate)
+VALUES (G4_Transactions_Seq.NEXTVAL, 80, 1600, TO_DATE('2023-04-09', 'YYYY-MM-DD'), TO_DATE('2023-04-16', 'YYYY-MM-DD'));
 
-INSERT INTO G4_Categories
-VALUES (G4_Categories_Seq.nextval,'Social genre');
-INSERT INTO G4_Publishers
-VALUES (G4_Publishers_Seq.nextval, 'Amrita Pritam', '5124 Morningside Park', '6478857679', 'Amrita.Pritam@email');
-INSERT INTO G4_Users
-VALUES (G4_Users_Seq.nextval,'Victoria', 'Secret', '211 Spadina Street', 6474715267, 'Victoria.Secret@email.com');
-INSERT INTO G4_Authors
-VALUES (G4_Authors_Seq.nextval,'Amrita', 'Pritam','Author of Pinjar book');
-INSERT INTO g4_books
-VALUES (G4_Books_Seq.nextval,'Pinjar',G4_Authors_Seq.currval,G4_Publishers_Seq.currval,G4_Categories_Seq.currval,G4_ISBN_Seq.nextval,112, 1950, Default);
-INSERT INTO G4_Orders
-VALUES (OrderID_Seq.nextval,G4_Books_Seq.currval,G4_Publishers_Seq.currval, TO_Date('2022/08/25'));
-INSERT INTO G4_Reservations
-VALUES (Reservation_Seq.nextval ,G4_Users_Seq.currval, G4_Books_Seq.currval, TO_Date('2022/07/25'));
-INSERT INTO G4_Transactions
-VALUES (G4_Transactions_Seq.nextval,G4_Books_Seq.currval, G4_Users_Seq.currval, TO_Date('2022/09/25'), TO_Date('2022/10/25'), TO_Date('2022/10/25'));
+INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDate)
+VALUES (G4_Transactions_Seq.NEXTVAL, 81, 1601, TO_DATE('2023-04-09', 'YYYY-MM-DD'), TO_DATE('2023-04-16', 'YYYY-MM-DD'));
 
+INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDate)
+VALUES (G4_Transactions_Seq.NEXTVAL, 88, 1603, TO_DATE('2023-04-09', 'YYYY-MM-DD'), TO_DATE('2023-04-16', 'YYYY-MM-DD'));
 
+INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDate)
+VALUES (G4_Transactions_Seq.NEXTVAL, 91, 1602, TO_DATE('2023-04-09', 'YYYY-MM-DD'), TO_DATE('2023-04-16', 'YYYY-MM-DD'));
 
-INSERT INTO G4_Categories
-VALUES (G4_Categories_Seq.nextval,'Romance Novel');
-INSERT INTO G4_Publishers
-VALUES (G4_Publishers_Seq.nextval, 'Vikram Seth', '489 Finch Stree West', '6478857346', 'Vikram.Seth@email');
-INSERT INTO G4_Users
-VALUES (G4_Users_Seq.nextval,'Sesame', 'Sid', '522 Keele Street', 6474776431, 'Sesame.Sid@email.com');
-INSERT INTO G4_Authors
-VALUES (G4_Authors_Seq.nextval,'Vikram', 'Seth','Author of A Suitable Boy book');
-INSERT INTO g4_books
-VALUES (G4_Books_Seq.nextval,'A Suitable Boy',G4_Authors_Seq.currval,G4_Publishers_Seq.currval,G4_Categories_Seq.currval,G4_ISBN_Seq.nextval,1349, 1993, Default);
-INSERT INTO G4_Orders
-VALUES (OrderID_Seq.nextval,G4_Books_Seq.currval,G4_Publishers_Seq.currval, TO_Date('2023/03/08'));
-INSERT INTO G4_Reservations
-VALUES (Reservation_Seq.nextval ,G4_Users_Seq.currval, G4_Books_Seq.currval, TO_Date('2023/02/08'));
-INSERT INTO G4_Transactions
-VALUES (G4_Transactions_Seq.nextval,G4_Books_Seq.currval, G4_Users_Seq.currval, TO_Date('2023/04/08'), TO_Date('2023/05/08'), TO_Date('2023/05/08'));
+INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDate)
+VALUES (G4_Transactions_Seq.NEXTVAL, 94, 1609, TO_DATE('2023-04-09', 'YYYY-MM-DD'), TO_DATE('2023-04-16', 'YYYY-MM-DD'));
+
+INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDate)
+VALUES (G4_Transactions_Seq.NEXTVAL, 97, 1607, TO_DATE('2023-04-10', 'YYYY-MM-DD'), TO_DATE('2023-04-17', 'YYYY-MM-DD'));
+
+INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDate)
+VALUES (G4_Transactions_Seq.NEXTVAL, 89, 1605, TO_DATE('2023-04-10', 'YYYY-MM-DD'), TO_DATE('2023-04-17', 'YYYY-MM-DD'));
+
+INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDate)
+VALUES (G4_Transactions_Seq.NEXTVAL, 93, 1604, TO_DATE('2023-04-10', 'YYYY-MM-DD'), TO_DATE('2023-04-17', 'YYYY-MM-DD'));
+
+INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDate)
+VALUES (G4_Transactions_Seq.NEXTVAL, 91, 1608, TO_DATE('2023-04-10', 'YYYY-MM-DD'), TO_DATE('2023-04-17', 'YYYY-MM-DD'));
+
+INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDate)
+VALUES (G4_Transactions_Seq.NEXTVAL, 80, 1601, TO_DATE('2023-04-10', 'YYYY-MM-DD'), TO_DATE('2023-04-17', 'YYYY-MM-DD'));
 
 
+Drop index idx_g4_books_title;
+DROP INDEX idx_g4_books_authorid;
+DROP INDEX idx_g4_books_categoryid;
+DROP INDEX idx_g4_users_firstname;
+DROP INDEX idx_g4_users_lastname;
+DROP INDEX idx_g4_publishers_name;
+DROP INDEX idx_g4_authors_firstname;
+DROP INDEX idx_g4_authors_lastname;
 
-INSERT INTO G4_Categories
-VALUES (G4_Categories_Seq.nextval,'Historical Novel');
-INSERT INTO G4_Publishers
-VALUES (G4_Publishers_Seq.nextval, 'Charles Darwin', '769 Lawrence Ave East', '6478786455', 'Charles.Darwin@email');
-INSERT INTO G4_Users
-VALUES (G4_Users_Seq.nextval,'Wendy', 'Sandwich', '512 Kennedy Street', 6474347437, 'Wendy.Sandwich@email.com');
-INSERT INTO G4_Authors
-VALUES (G4_Authors_Seq.nextval,'Charles', 'Darwin','Author of A Tale of Two Cities book');
-INSERT INTO g4_books
-VALUES (G4_Books_Seq.nextval,'A Tale of Two Cities',G4_Authors_Seq.currval,G4_Publishers_Seq.currval,G4_Categories_Seq.currval,G4_ISBN_Seq.nextval,304, 1859, Default);
-INSERT INTO G4_Orders
-VALUES (OrderID_Seq.nextval,G4_Books_Seq.currval,G4_Publishers_Seq.currval, TO_Date('2023/04/02'));
-INSERT INTO G4_Reservations
-VALUES (Reservation_Seq.nextval ,G4_Users_Seq.currval, G4_Books_Seq.currval, TO_Date('2023/03/02'));
-INSERT INTO G4_Transactions
-VALUES (G4_Transactions_Seq.nextval,G4_Books_Seq.currval, G4_Users_Seq.currval, TO_Date('2023/04/02'), TO_Date('2023/05/02'), TO_Date('2023/05/02'));
-
--- INDEXES
 
 -- G4_Books table - indexes on Title, AuthorID, CategoryID, and ISBN:
 CREATE INDEX idx_g4_books_title ON G4_Books(Title);
 CREATE INDEX idx_g4_books_authorid ON G4_Books(AuthorID);
 CREATE INDEX idx_g4_books_categoryid ON G4_Books(CategoryID);
-CREATE INDEX idx_g4_books_isbn ON G4_Books(ISBN);
+
 
 -- G4_Users table: indexes on FirstName, LastName, and Email
 CREATE INDEX idx_g4_users_firstname ON G4_Users(FirstName);
 CREATE INDEX idx_g4_users_lastname ON G4_Users(LastName);
-CREATE INDEX idx_g4_users_email ON G4_Users(Email);
+
 
 -- G4_Publishers table: index on Name
 CREATE INDEX idx_g4_publishers_name ON G4_Publishers(Name);
@@ -353,49 +438,46 @@ CREATE INDEX idx_g4_publishers_name ON G4_Publishers(Name);
 CREATE INDEX idx_g4_authors_firstname ON G4_Authors(FirstName);
 CREATE INDEX idx_g4_authors_lastname ON G4_Authors(LastName);
 
--- TRIGGERS
 
--- trg_g4_transactions_before_insert: A trigger that automatically sets the DueDate when a new transaction is created
-DELIMITER //
-CREATE TRIGGER trg_g4_transactions_before_insert
+-- TRIGGERS ------------------
+
+-- trg_g4_transactions_before_insert - A trigger that automatically sets the DueDate when a new transaction is created
+CREATE OR REPLACE TRIGGER trg_g4_trans_before_insert
 BEFORE INSERT ON G4_Transactions
 FOR EACH ROW
 BEGIN
-  SET NEW.DueDate = DATE_ADD(NEW.CheckoutDate, INTERVAL 14 DAY);
+  :NEW.DueDate := :NEW.CheckoutDate + 14;
 END;
-//
-DELIMITER ;
-
 
 -- trg_g4_books_after_update: A trigger that sets the AvailabilityStatus of a book to 'Unavailable' when a new transaction is inserted.
-DELIMITER //
-CREATE TRIGGER trg_g4_books_after_update
+CREATE OR REPLACE TRIGGER trg_g4_books_after_update
 AFTER INSERT ON G4_Transactions
 FOR EACH ROW
 BEGIN
   UPDATE G4_Books
   SET AvailabilityStatus = 'Unavailable'
-  WHERE BookID = NEW.BookID;
+  WHERE BookID = :NEW.BookID;
 END;
-//
-DELIMITER ;
 
 -- trg_g4_books_after_return: A trigger that sets the AvailabilityStatus of a book to 'Available' when the book is returned, i.e., when the ReturnDate of a transaction is updated.
-DELIMITER //
-CREATE TRIGGER trg_g4_books_after_return
+CREATE OR REPLACE TRIGGER trg_g4_books_after_return
 AFTER UPDATE ON G4_Transactions
 FOR EACH ROW
 BEGIN
-  IF OLD.ReturnDate IS NULL AND NEW.ReturnDate IS NOT NULL THEN
+  IF :OLD.ReturnDate IS NULL AND :NEW.ReturnDate IS NOT NULL THEN
     UPDATE G4_Books
     SET AvailabilityStatus = 'Available'
-    WHERE BookID = NEW.BookID;
+    WHERE BookID = :NEW.BookID;
   END IF;
 END;
-//
-DELIMITER ;
 
+-- testing trg_g4_trans_before_insert  trigger
+INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDate)
+VALUES (G4_Transactions_Seq.NEXTVAL, 88, 1608, TO_DATE('2023-04-08', 'YYYY-MM-DD'), TO_DATE('2023-04-17', 'YYYY-MM-DD'));
 
+-- testing trg_g4_books_after_update trigger - Make sure that bookid 88 is set to 'Unavailable'
+SELECT * from G4_books where bookid = 88;
 
-
-
+-- Testing trg_g4_books_after_return triiger - 
+UPDATE G4_Transactions set returndate = TO_DATE('2023-04-15', 'YYYY-MM-DD') where transactionid = 3160; 
+SELECT * from G4_books where bookid = 88;
