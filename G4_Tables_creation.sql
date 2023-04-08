@@ -481,3 +481,88 @@ SELECT * from G4_books where bookid = 88;
 -- Testing trg_g4_books_after_return triiger - 
 UPDATE G4_Transactions set returndate = TO_DATE('2023-04-15', 'YYYY-MM-DD') where transactionid = 3160; 
 SELECT * from G4_books where bookid = 88;
+
+
+
+--- Procedures ---------
+
+-- Procedure that inserts a new user into the G4_Users table
+CREATE OR REPLACE PROCEDURE insert_user(
+    p_first_name IN VARCHAR2,
+    p_last_name IN VARCHAR2,
+    p_address IN VARCHAR2,
+    p_phone_number IN VARCHAR2,
+    p_email IN VARCHAR2,
+    p_member_type_id IN INT
+)
+IS
+    v_user_id INT;
+BEGIN
+    SELECT G4_Users_Seq.NEXTVAL INTO v_user_id FROM DUAL;
+    INSERT INTO G4_Users (UserID, FirstName, LastName, Address, PhoneNumber, Email, MemberTypeID)
+    VALUES (v_user_id, p_first_name, p_last_name, p_address, p_phone_number, p_email, p_member_type_id);
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('User inserted successfully');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+END;
+
+
+-- Testing insetion of a new user using insert_user procedure
+BEGIN
+  insert_user('John', 'Doe', '123 Main St', '555-1234', 'johndoe@example.com', 1);
+END;
+
+
+---  procedure to delete all reservations for a given user
+CREATE OR REPLACE PROCEDURE delete_reservations_for_user(
+    p_user_id IN INT
+)
+IS
+BEGIN
+    DELETE FROM G4_Reservations WHERE UserID = p_user_id;
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Reservations for user ' || p_user_id || ' deleted successfully');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+END;
+
+-- testing 
+BEGIN
+  delete_reservations_for_user(1601);
+END;
+
+
+
+-- Procedure that update the due date for a transaction
+
+CREATE OR REPLACE PROCEDURE update_transaction_due_date(
+    p_transaction_id IN INT,
+    p_new_due_date IN DATE
+)
+IS
+BEGIN
+    UPDATE G4_Transactions
+    SET DueDate = p_new_due_date
+    WHERE TransactionID = p_transaction_id;
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Transaction due date updated successfully');
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Error: No transaction found with ID ' || p_transaction_id);
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+END;
+/
+
+-- testing update_transaction_due_date procedure
+DECLARE
+  v_transaction_id G4_Transactions.TransactionID%TYPE := 3150;
+  v_new_due_date DATE := TO_DATE('2023-04-23', 'YYYY-MM-DD');
+BEGIN
+  update_transaction_due_date(v_transaction_id, v_new_due_date);
+  DBMS_OUTPUT.PUT_LINE('Transaction due date updated successfully');
+END;
+/
