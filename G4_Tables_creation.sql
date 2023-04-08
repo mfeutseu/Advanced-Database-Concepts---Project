@@ -148,6 +148,9 @@ Drop Sequence G4_ISBN_Seq;
 Drop Sequence OrderID_Seq;
 Drop Sequence Reservation_Seq;
 
+
+---  Sequences ------------
+
 -- Create a sequence for G4_Books
 CREATE SEQUENCE G4_Books_Seq
 START WITH 80
@@ -329,3 +332,70 @@ INSERT INTO G4_Reservations
 VALUES (Reservation_Seq.nextval ,G4_Users_Seq.currval, G4_Books_Seq.currval, TO_Date('2023/03/02'));
 INSERT INTO G4_Transactions
 VALUES (G4_Transactions_Seq.nextval,G4_Books_Seq.currval, G4_Users_Seq.currval, TO_Date('2023/04/02'), TO_Date('2023/05/02'), TO_Date('2023/05/02'));
+
+-- INDEXES
+
+-- G4_Books table - indexes on Title, AuthorID, CategoryID, and ISBN:
+CREATE INDEX idx_g4_books_title ON G4_Books(Title);
+CREATE INDEX idx_g4_books_authorid ON G4_Books(AuthorID);
+CREATE INDEX idx_g4_books_categoryid ON G4_Books(CategoryID);
+CREATE INDEX idx_g4_books_isbn ON G4_Books(ISBN);
+
+-- G4_Users table: indexes on FirstName, LastName, and Email
+CREATE INDEX idx_g4_users_firstname ON G4_Users(FirstName);
+CREATE INDEX idx_g4_users_lastname ON G4_Users(LastName);
+CREATE INDEX idx_g4_users_email ON G4_Users(Email);
+
+-- G4_Publishers table: index on Name
+CREATE INDEX idx_g4_publishers_name ON G4_Publishers(Name);
+
+-- G4_Authors table: indexes on FirstName and LastName
+CREATE INDEX idx_g4_authors_firstname ON G4_Authors(FirstName);
+CREATE INDEX idx_g4_authors_lastname ON G4_Authors(LastName);
+
+-- TRIGGERS
+
+-- trg_g4_transactions_before_insert: A trigger that automatically sets the DueDate when a new transaction is created
+DELIMITER //
+CREATE TRIGGER trg_g4_transactions_before_insert
+BEFORE INSERT ON G4_Transactions
+FOR EACH ROW
+BEGIN
+  SET NEW.DueDate = DATE_ADD(NEW.CheckoutDate, INTERVAL 14 DAY);
+END;
+//
+DELIMITER ;
+
+
+-- trg_g4_books_after_update: A trigger that sets the AvailabilityStatus of a book to 'Unavailable' when a new transaction is inserted.
+DELIMITER //
+CREATE TRIGGER trg_g4_books_after_update
+AFTER INSERT ON G4_Transactions
+FOR EACH ROW
+BEGIN
+  UPDATE G4_Books
+  SET AvailabilityStatus = 'Unavailable'
+  WHERE BookID = NEW.BookID;
+END;
+//
+DELIMITER ;
+
+-- trg_g4_books_after_return: A trigger that sets the AvailabilityStatus of a book to 'Available' when the book is returned, i.e., when the ReturnDate of a transaction is updated.
+DELIMITER //
+CREATE TRIGGER trg_g4_books_after_return
+AFTER UPDATE ON G4_Transactions
+FOR EACH ROW
+BEGIN
+  IF OLD.ReturnDate IS NULL AND NEW.ReturnDate IS NOT NULL THEN
+    UPDATE G4_Books
+    SET AvailabilityStatus = 'Available'
+    WHERE BookID = NEW.BookID;
+  END IF;
+END;
+//
+DELIMITER ;
+
+
+
+
+
