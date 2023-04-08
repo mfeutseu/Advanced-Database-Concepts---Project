@@ -410,7 +410,7 @@ INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDat
 VALUES (G4_Transactions_Seq.NEXTVAL, 80, 1601, TO_DATE('2023-04-10', 'YYYY-MM-DD'), TO_DATE('2023-04-17', 'YYYY-MM-DD'));
 
 
-Drop index idx_g4_books_title;
+DROP INDEX idx_g4_books_title;
 DROP INDEX idx_g4_books_authorid;
 DROP INDEX idx_g4_books_categoryid;
 DROP INDEX idx_g4_users_firstname;
