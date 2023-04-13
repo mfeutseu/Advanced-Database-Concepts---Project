@@ -1,15 +1,15 @@
-drop TABLE G4_BookFormats; 
-drop TABLE G4_BookConditions;
-drop TABLE G4_MemberTypes;
+DROP TABLE G4_Reservations CASCADE CONSTRAINTS;
+DROP TABLE G4_Orders CASCADE CONSTRAINTS;
+DROP TABLE G4_Transactions CASCADE CONSTRAINTS;
+DROP TABLE G4_Users CASCADE CONSTRAINTS;
+DROP TABLE G4_Books CASCADE CONSTRAINTS;
+DROP TABLE G4_Publishers CASCADE CONSTRAINTS;
+DROP TABLE G4_Authors CASCADE CONSTRAINTS;
+DROP TABLE G4_Categories CASCADE CONSTRAINTS;
+DROP TABLE G4_BookFormats CASCADE CONSTRAINTS; 
+DROP TABLE G4_BookConditions CASCADE CONSTRAINTS;
+DROP TABLE G4_MemberTypes CASCADE CONSTRAINTS;
 
-DROP TABLE G4_Reservations;
-DROP TABLE G4_Orders;
-DROP TABLE G4_Transactions;
-DROP TABLE G4_Users;
-DROP TABLE G4_Books;
-DROP TABLE G4_Publishers;
-DROP TABLE G4_Authors;
-DROP TABLE G4_Categories;
 
 CREATE TABLE G4_BookFormats (
     FormatID INT PRIMARY KEY,
@@ -114,7 +114,7 @@ CREATE TABLE G4_Reservations (
     FOREIGN KEY (BookID) REFERENCES G4_Books(BookID)
 );
 
--- Everything About Sequence
+-- Dropping Sequences
 Drop Sequence G4_Books_Seq;
 Drop Sequence G4_Users_Seq;
 Drop Sequence G4_Transactions_Seq;
@@ -124,13 +124,14 @@ Drop Sequence G4_Authors_Seq;
 Drop Sequence G4_Reservations_Seq;
 Drop Sequence G4_Categories_Seq;
 
+---- Creating sequences
+
 -- Create a sequence for G4_Books
 CREATE SEQUENCE G4_Books_Seq
 START WITH 80
 INCREMENT BY 1
 NOCACHE
 NOCYCLE;
-
 
 -- Create a sequence for G4_Users
 CREATE SEQUENCE G4_Users_Seq
@@ -182,7 +183,8 @@ NOCACHE
 NOCYCLE;
 
 
------------------ Inserting data -----
+
+----------------- Inserting data ------------------------------------------------
 
 -- G4_BookFormats table
   INSERT INTO G4_BookFormats (FormatID, FormatName) VALUES (1, 'Hardcover');
@@ -320,6 +322,12 @@ INSERT INTO G4_Users (UserID, FirstName, LastName, Address, PhoneNumber, Email, 
   
   INSERT INTO G4_Books (BookID, Title, AuthorID, PublisherID, CategoryID, ISBN, NumPages, YearPublished, AvailabilityStatus, FormatID, ConditionID)
   VALUES (G4_Books_Seq.NEXTVAL, 'The Catcher in the Rye', 704, 1057, 801, '9780316769174', 277, 1951, 'Available', 3, 1);
+  
+  INSERT INTO G4_Books (BookID, Title, AuthorID, PublisherID, CategoryID, ISBN, NumPages, YearPublished, AvailabilityStatus, FormatID, ConditionID)
+  VALUES (G4_Books_Seq.NEXTVAL, 'The Great Gatsby 2', 704, 1057, 802, '9780521566871', 279, 1951, 'Available', 3, 1);
+  
+  INSERT INTO G4_Books (BookID, Title, AuthorID, PublisherID, CategoryID, ISBN, NumPages, YearPublished, AvailabilityStatus, FormatID, ConditionID)
+  VALUES (G4_Books_Seq.NEXTVAL, 'To Kill a Mockingbird', 702, 1055, 804, '9780721466871', 299, 1960, 'Available', 2, 1);
 
 
 -- G4_Reservations
@@ -332,13 +340,13 @@ INSERT INTO G4_Users (UserID, FirstName, LastName, Address, PhoneNumber, Email, 
   INSERT INTO G4_Reservations (ReservationID, UserID, BookID, ReservationDate)
   VALUES (G4_Reservations_Seq.NEXTVAL, 1604, 88, TO_DATE('2023-04-09', 'YYYY-MM-DD'));
   INSERT INTO G4_Reservations (ReservationID, UserID, BookID, ReservationDate)
-  VALUES (G4_Reservations_Seq.NEXTVAL, 1605, 91, TO_DATE('2023-04-09', 'YYYY-MM-DD'));
+  VALUES (G4_Reservations_Seq.NEXTVAL, 1605, 84, TO_DATE('2023-04-09', 'YYYY-MM-DD'));
   INSERT INTO G4_Reservations (ReservationID, UserID, BookID, ReservationDate)
-  VALUES (G4_Reservations_Seq.NEXTVAL, 1609, 93, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
+  VALUES (G4_Reservations_Seq.NEXTVAL, 1609, 88, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
   INSERT INTO G4_Reservations (ReservationID, UserID, BookID, ReservationDate)
-  VALUES (G4_Reservations_Seq.NEXTVAL, 1602, 94, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
+  VALUES (G4_Reservations_Seq.NEXTVAL, 1602, 87, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
   INSERT INTO G4_Reservations (ReservationID, UserID, BookID, ReservationDate)
-  VALUES (G4_Reservations_Seq.NEXTVAL, 1603, 97, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
+  VALUES (G4_Reservations_Seq.NEXTVAL, 1603, 86, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
   INSERT INTO G4_Reservations (ReservationID, UserID, BookID, ReservationDate)
   VALUES (G4_Reservations_Seq.NEXTVAL, 1604, 88, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
   INSERT INTO G4_Reservations (ReservationID, UserID, BookID, ReservationDate)
@@ -360,16 +368,16 @@ INSERT INTO G4_Orders (OrderID, BookID, PublisherID, OrderDate)
 VALUES (G4_Orders_Seq.NEXTVAL, 89, 1054, TO_DATE('2023-04-09', 'YYYY-MM-DD'));
 
 INSERT INTO G4_Orders (OrderID, BookID, PublisherID, OrderDate)
-VALUES (G4_Orders_Seq.NEXTVAL, 91, 1055, TO_DATE('2023-04-09', 'YYYY-MM-DD'));
+VALUES (G4_Orders_Seq.NEXTVAL, 87, 1055, TO_DATE('2023-04-09', 'YYYY-MM-DD'));
 
 INSERT INTO G4_Orders (OrderID, BookID, PublisherID, OrderDate)
-VALUES (G4_Orders_Seq.NEXTVAL, 93, 1052, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
+VALUES (G4_Orders_Seq.NEXTVAL, 83, 1052, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
 
 INSERT INTO G4_Orders (OrderID, BookID, PublisherID, OrderDate)
-VALUES (G4_Orders_Seq.NEXTVAL, 94, 1059, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
+VALUES (G4_Orders_Seq.NEXTVAL, 84, 1059, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
 
 INSERT INTO G4_Orders (OrderID, BookID, PublisherID, OrderDate)
-VALUES (G4_Orders_Seq.NEXTVAL, 97, 1057, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
+VALUES (G4_Orders_Seq.NEXTVAL, 87, 1057, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
 
 INSERT INTO G4_Orders (OrderID, BookID, PublisherID, OrderDate)
 VALUES (G4_Orders_Seq.NEXTVAL, 88, 1050, TO_DATE('2023-04-10', 'YYYY-MM-DD'));
@@ -389,35 +397,36 @@ INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDat
 VALUES (G4_Transactions_Seq.NEXTVAL, 88, 1603, TO_DATE('2023-04-09', 'YYYY-MM-DD'), TO_DATE('2023-04-16', 'YYYY-MM-DD'));
 
 INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDate)
-VALUES (G4_Transactions_Seq.NEXTVAL, 91, 1602, TO_DATE('2023-04-09', 'YYYY-MM-DD'), TO_DATE('2023-04-16', 'YYYY-MM-DD'));
+VALUES (G4_Transactions_Seq.NEXTVAL, 81, 1602, TO_DATE('2023-04-09', 'YYYY-MM-DD'), TO_DATE('2023-04-16', 'YYYY-MM-DD'));
 
 INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDate)
-VALUES (G4_Transactions_Seq.NEXTVAL, 94, 1609, TO_DATE('2023-04-09', 'YYYY-MM-DD'), TO_DATE('2023-04-16', 'YYYY-MM-DD'));
+VALUES (G4_Transactions_Seq.NEXTVAL, 84, 1609, TO_DATE('2023-04-09', 'YYYY-MM-DD'), TO_DATE('2023-04-16', 'YYYY-MM-DD'));
 
 INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDate)
-VALUES (G4_Transactions_Seq.NEXTVAL, 97, 1607, TO_DATE('2023-04-10', 'YYYY-MM-DD'), TO_DATE('2023-04-17', 'YYYY-MM-DD'));
+VALUES (G4_Transactions_Seq.NEXTVAL, 87, 1607, TO_DATE('2023-04-10', 'YYYY-MM-DD'), TO_DATE('2023-04-17', 'YYYY-MM-DD'));
 
 INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDate)
 VALUES (G4_Transactions_Seq.NEXTVAL, 89, 1605, TO_DATE('2023-04-10', 'YYYY-MM-DD'), TO_DATE('2023-04-17', 'YYYY-MM-DD'));
 
 INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDate)
-VALUES (G4_Transactions_Seq.NEXTVAL, 93, 1604, TO_DATE('2023-04-10', 'YYYY-MM-DD'), TO_DATE('2023-04-17', 'YYYY-MM-DD'));
+VALUES (G4_Transactions_Seq.NEXTVAL, 83, 1604, TO_DATE('2023-04-10', 'YYYY-MM-DD'), TO_DATE('2023-04-17', 'YYYY-MM-DD'));
 
 INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDate)
-VALUES (G4_Transactions_Seq.NEXTVAL, 91, 1608, TO_DATE('2023-04-10', 'YYYY-MM-DD'), TO_DATE('2023-04-17', 'YYYY-MM-DD'));
+VALUES (G4_Transactions_Seq.NEXTVAL, 81, 1608, TO_DATE('2023-04-10', 'YYYY-MM-DD'), TO_DATE('2023-04-17', 'YYYY-MM-DD'));
 
 INSERT INTO G4_Transactions (TransactionID, BookID, UserID, CheckoutDate, DueDate)
 VALUES (G4_Transactions_Seq.NEXTVAL, 80, 1601, TO_DATE('2023-04-10', 'YYYY-MM-DD'), TO_DATE('2023-04-17', 'YYYY-MM-DD'));
 
 
-DROP INDEX idx_g4_books_title;
-DROP INDEX idx_g4_books_authorid;
-DROP INDEX idx_g4_books_categoryid;
-DROP INDEX idx_g4_users_firstname;
-DROP INDEX idx_g4_users_lastname;
-DROP INDEX idx_g4_publishers_name;
-DROP INDEX idx_g4_authors_firstname;
-DROP INDEX idx_g4_authors_lastname;
+--- Droping indexes
+DROP INDEX  idx_g4_books_title;
+DROP INDEX  idx_g4_books_authorid;
+DROP INDEX  idx_g4_books_categoryid;
+DROP INDEX  idx_g4_users_firstname;
+DROP INDEX  idx_g4_users_lastname;
+DROP INDEX  idx_g4_publishers_name;
+DROP INDEX  idx_g4_authors_firstname;
+DROP INDEX  idx_g4_authors_lastname;
 
 
 -- G4_Books table - indexes on Title, AuthorID, CategoryID, and ISBN:
@@ -439,8 +448,9 @@ CREATE INDEX idx_g4_authors_firstname ON G4_Authors(FirstName);
 CREATE INDEX idx_g4_authors_lastname ON G4_Authors(LastName);
 
 
--- TRIGGERS ------------------
 
+
+-- TRIGGERS ------------------
 -- trg_g4_transactions_before_insert - A trigger that automatically sets the DueDate when a new transaction is created
 CREATE OR REPLACE TRIGGER trg_g4_trans_before_insert
 BEFORE INSERT ON G4_Transactions
@@ -617,7 +627,6 @@ END;
 
 
 --- Function to retrieve the total number of books published by a publisher
-
 CREATE OR REPLACE FUNCTION get_publisher_book_count(p_publisher_id IN INT)
 RETURN INT
 IS
@@ -640,3 +649,92 @@ END;
 /
 -- test get_publisher_book_count function
 SELECT get_publisher_book_count(1057) FROM dual;
+
+-- Function to get the total number of books borrowed by a user
+CREATE OR REPLACE FUNCTION get_books_borrowed_by_user(p_user_id IN INT)
+RETURN INT
+IS
+    v_count INT;
+BEGIN
+    SELECT COUNT(*) INTO v_count
+    FROM G4_Transactions
+    WHERE UserID = p_user_id AND ReturnDate IS NOT NULL;
+    
+    RETURN v_count;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RETURN 0;
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+        RETURN 0;
+END;
+/
+
+Testing get_books_borrowed_by_user function
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(get_books_borrowed_by_user(1604));
+END;
+
+
+-- Use of Cursor
+
+DECLARE
+  -- Declare variables to hold book data
+  v_book_id G4_Books.BookID%TYPE;
+  v_title G4_Books.Title%TYPE;
+  v_author G4_Authors.AuthorName%TYPE;
+  v_publisher G4_Publishers.PublisherName%TYPE;
+  v_category G4_Categories.CategoryName%TYPE;
+  v_isbn G4_Books.ISBN%TYPE;
+  v_num_pages G4_Books.NumPages%TYPE;
+  v_year_published G4_Books.YearPublished%TYPE;
+  v_availability_status G4_Books.AvailabilityStatus%TYPE;
+  v_format G4_BookFormats.FormatName%TYPE;
+  v_condition G4_BookConditions.ConditionName%TYPE;
+
+  -- Declare a variable to hold the date to filter books
+  v_published_before DATE := TO_DATE('2023-01-01', 'YYYY-MM-DD');
+
+  -- Declare a cursor to select books published before the given date
+  CURSOR c_books_published_before IS
+    SELECT b.BookID, b.Title, a.AuthorName, p.PublisherName, c.CategoryName, b.ISBN, b.NumPages, b.YearPublished, b.AvailabilityStatus, f.FormatName, bc.ConditionName
+    FROM G4_Books b
+    JOIN G4_Authors a ON b.AuthorID = a.AuthorID
+    JOIN G4_Publishers p ON b.PublisherID = p.PublisherID
+    JOIN G4_Categories c ON b.CategoryID = c.CategoryID
+    LEFT JOIN G4_BookFormats f ON b.FormatID = f.FormatID
+    LEFT JOIN G4_BookConditions bc ON b.ConditionID = bc.ConditionID
+    WHERE b.YearPublished < v_published_before;
+
+BEGIN
+  -- Open the cursor
+  OPEN c_books_published_before;
+
+  -- Loop through the results and display the book data
+  LOOP
+    FETCH c_books_published_before INTO v_book_id, v_title, v_author, v_publisher, v_category, v_isbn, v_num_pages, v_year_published, v_availability_status, v_format, v_condition;
+    EXIT WHEN c_books_published_before%NOTFOUND;
+
+    DBMS_OUTPUT.PUT_LINE('Book ID: ' || v_book_id);
+    DBMS_OUTPUT.PUT_LINE('Title: ' || v_title);
+    DBMS_OUTPUT.PUT_LINE('Author: ' || v_author);
+    DBMS_OUTPUT.PUT_LINE('Publisher: ' || v_publisher);
+    DBMS_OUTPUT.PUT_LINE('Category: ' || v_category);
+    DBMS_OUTPUT.PUT_LINE('ISBN: ' || v_isbn);
+    DBMS_OUTPUT.PUT_LINE('Number of Pages: ' || v_num_pages);
+    DBMS_OUTPUT.PUT_LINE('Year Published: ' || v_year_published);
+    DBMS_OUTPUT.PUT_LINE('Availability Status: ' || v_availability_status);
+    DBMS_OUTPUT.PUT_LINE('Format: ' || v_format);
+    DBMS_OUTPUT.PUT_LINE('Condition: ' || v_condition);
+    DBMS_OUTPUT.PUT_LINE('----------------------------------------');
+  END LOOP;
+
+  -- Close the cursor
+  CLOSE c_books_published_before;
+EXCEPTION
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+END;
+/
+
+
