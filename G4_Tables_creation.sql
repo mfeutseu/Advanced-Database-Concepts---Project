@@ -676,65 +676,38 @@ BEGIN
 END;
 
 
--- Use of Cursor
+--
 
 DECLARE
-  -- Declare variables to hold book data
-  v_book_id G4_Books.BookID%TYPE;
-  v_title G4_Books.Title%TYPE;
-  v_author G4_Authors.AuthorName%TYPE;
-  v_publisher G4_Publishers.PublisherName%TYPE;
-  v_category G4_Categories.CategoryName%TYPE;
-  v_isbn G4_Books.ISBN%TYPE;
-  v_num_pages G4_Books.NumPages%TYPE;
-  v_year_published G4_Books.YearPublished%TYPE;
-  v_availability_status G4_Books.AvailabilityStatus%TYPE;
-  v_format G4_BookFormats.FormatName%TYPE;
-  v_condition G4_BookConditions.ConditionName%TYPE;
+-- Declare variables to hold book data
+v_book_id G4_Authors.AuthorID%TYPE;
+v_first_name G4_Authors.FirstName%TYPE;
+v_last_name G4_Authors.LastName%TYPE;
+v_biography G4_Authors.Biography%TYPE;
 
-  -- Declare a variable to hold the date to filter books
-  v_published_before DATE := TO_DATE('2023-01-01', 'YYYY-MM-DD');
-
-  -- Declare a cursor to select books published before the given date
-  CURSOR c_books_published_before IS
-    SELECT b.BookID, b.Title, a.AuthorName, p.PublisherName, c.CategoryName, b.ISBN, b.NumPages, b.YearPublished, b.AvailabilityStatus, f.FormatName, bc.ConditionName
-    FROM G4_Books b
-    JOIN G4_Authors a ON b.AuthorID = a.AuthorID
-    JOIN G4_Publishers p ON b.PublisherID = p.PublisherID
-    JOIN G4_Categories c ON b.CategoryID = c.CategoryID
-    LEFT JOIN G4_BookFormats f ON b.FormatID = f.FormatID
-    LEFT JOIN G4_BookConditions bc ON b.ConditionID = bc.ConditionID
-    WHERE b.YearPublished < v_published_before;
+-- Declare a cursor to select authors
+CURSOR c_authors IS
+SELECT AuthorID, FirstName, LastName, Biography
+FROM G4_Authors;
 
 BEGIN
-  -- Open the cursor
-  OPEN c_books_published_before;
+-- Open the cursor
+OPEN c_authors;
 
-  -- Loop through the results and display the book data
-  LOOP
-    FETCH c_books_published_before INTO v_book_id, v_title, v_author, v_publisher, v_category, v_isbn, v_num_pages, v_year_published, v_availability_status, v_format, v_condition;
-    EXIT WHEN c_books_published_before%NOTFOUND;
+-- Loop through the results and display the author data
+LOOP
+FETCH c_authors INTO v_book_id, v_first_name, v_last_name, v_biography;
+EXIT WHEN c_authors%NOTFOUND;
+DBMS_OUTPUT.PUT_LINE('Author ID: ' || v_book_id);
+DBMS_OUTPUT.PUT_LINE('First Name: ' || v_first_name);
+DBMS_OUTPUT.PUT_LINE('Last Name: ' || v_last_name);
+DBMS_OUTPUT.PUT_LINE('Biography: ' || v_biography);
+DBMS_OUTPUT.PUT_LINE('----------------------------------------');
+END LOOP;
 
-    DBMS_OUTPUT.PUT_LINE('Book ID: ' || v_book_id);
-    DBMS_OUTPUT.PUT_LINE('Title: ' || v_title);
-    DBMS_OUTPUT.PUT_LINE('Author: ' || v_author);
-    DBMS_OUTPUT.PUT_LINE('Publisher: ' || v_publisher);
-    DBMS_OUTPUT.PUT_LINE('Category: ' || v_category);
-    DBMS_OUTPUT.PUT_LINE('ISBN: ' || v_isbn);
-    DBMS_OUTPUT.PUT_LINE('Number of Pages: ' || v_num_pages);
-    DBMS_OUTPUT.PUT_LINE('Year Published: ' || v_year_published);
-    DBMS_OUTPUT.PUT_LINE('Availability Status: ' || v_availability_status);
-    DBMS_OUTPUT.PUT_LINE('Format: ' || v_format);
-    DBMS_OUTPUT.PUT_LINE('Condition: ' || v_condition);
-    DBMS_OUTPUT.PUT_LINE('----------------------------------------');
-  END LOOP;
-
-  -- Close the cursor
-  CLOSE c_books_published_before;
+-- Close the cursor
+CLOSE c_authors;
 EXCEPTION
-  WHEN OTHERS THEN
-    DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+WHEN OTHERS THEN
+DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
 END;
-/
-
-
